@@ -17,13 +17,19 @@
     );
 
     const detectEyes = async () => {
-      const result = await detector.estimatePoses(video);
-      result[0]?.keypoints
+      (await detector.estimatePoses(video))[0]?.keypoints
         .filter((element) => ["left_eye", "right_eye"].includes(element.name))
         .forEach((element) => {
-          const { width, height } = video.getBoundingClientRect()
-          document.body.style.setProperty(`--${element.name}_x`, element.x / video.videoWidth * width);
-          document.body.style.setProperty(`--${element.name}_y`, element.y / video.videoHeight * height);
+          const { width, height } = video.getBoundingClientRect();
+
+          document.body.style.setProperty(
+            `--${element.name}_x`,
+            (element.x / video.videoWidth) * width
+          );
+          document.body.style.setProperty(
+            `--${element.name}_y`,
+            (element.y / video.videoHeight) * height
+          );
         });
 
       requestAnimationFrame(detectEyes);
@@ -31,26 +37,23 @@
 
     video.addEventListener("loadeddata", detectEyes);
 
-    navigator.getUserMedia(
-      { audio: false, video: true },
-      (stream) => { video.srcObject = stream; },
-      console.error
-    );
+    navigator.mediaDevices
+      .getUserMedia({ video: true })
+      .then((stream) => {
+        video.srcObject = stream;
+      });
   })();
 </script>
 
 <style>
   body {
     margin: 0;
-    --left_eye_x: 0;
-    --left_eye_y: 0;
-    --right_eye_x: 0;
-    --right_eye_y: 0;
   }
   video {
     max-width: 100vw;
   }
-  #left_eye, #right_eye {
+  #left_eye,
+  #right_eye {
     position: absolute;
     transform: scale(3);
   }
